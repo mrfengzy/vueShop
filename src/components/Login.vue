@@ -14,7 +14,7 @@
           <el-input prefix-icon="el-icon-lock" v-model="loginForm.password" type="password"></el-input>
         </el-form-item>
         <el-form-item class="btns">
-          <el-button type="primary" >登录</el-button>
+          <el-button type="primary" @click="login('loginFormRef')">登录</el-button>
           <el-button type="info" @click="resetLoginForm('loginFormRef')">重置</el-button>
         </el-form-item>
       </el-form>
@@ -25,13 +25,10 @@
 export default {
   data() {
      var checkPassword = (rule, value, callback) => {
-        var reg=/^(?![0-9]+$)(?![a-z]+$)(?![A-Z]+$)(?!([^(0-9a-zA-Z)])+$).{6,10}$/;
         if (!value) {
           return callback(new Error('请输入密码'));
         }
-        if (!reg.test(value)) {
-          callback(new Error('密码由6-10位数字、字母、特殊字符组成'));
-        } else {
+        if (value) {
           callback();
         }
       };
@@ -43,7 +40,7 @@ export default {
         loginFormRules: {
           username: [
             { required: true, message: '请输入用户名', trigger: 'blur' },
-            { min: 3, max: 10, message: '长度在 3 到 10 个字符', trigger: 'blur' }
+            { min: 3, max: 10, message: '长度在 3 到 10 个字符', trigger: 'change' }
           ],
           password: { validator: checkPassword, trigger: 'blur' }
         
@@ -56,6 +53,26 @@ export default {
       },
       resetLoginForm(e){
         this.$refs[e].resetFields()
+      },
+      login(e){
+        this.$refs[e].validate(async (valid)=>{
+          if(!valid) return;
+          const {data:res} = await this.$http.post('login',this.loginForm)
+          if(res.meta.msg === '用户名不存在'){
+            this.$notify.error({
+              title: '登录失败',
+              message: res.meta.msg,
+            });
+          }else{
+            this.$notify({
+              title: '登录成功',
+              message: res.meta.msg,
+              type: 'success'
+            });
+            window.sessionStorage.setItem('token',res.data.token)
+            this.$router.push('/home')
+          }
+        })
       }
     }
 }
