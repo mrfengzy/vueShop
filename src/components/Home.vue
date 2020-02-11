@@ -11,6 +11,7 @@
         <el-aside :width="isCollapse ? '64px' : '200px'">
           <div class="toggle-btn" @click="toggleSide">|||</div>
           <el-menu
+            :default-active="childPath"
             :router="true"
             :collapse-transition="false"
             :collapse="isCollapse"
@@ -24,7 +25,7 @@
                 <span>{{item.authName}}</span>
               </template>
               <!-- 二级菜单 -->
-              <el-menu-item :index="subItem.path" v-for="subItem in item.children" :key="subItem.id">
+              <el-menu-item :index="'/'+subItem.path" v-for="subItem in item.children" :key="subItem.id" @click="savePath('/'+subItem.path)">
                 <template slot="title">
                   <i class="el-icon-menu"></i>
                   <span>{{subItem.authName}}</span>
@@ -52,10 +53,12 @@ export default {
         '145':'iconfont icon-tradingvolume'
       },
       isCollapse:false,
+      childPath:''
     }
   },
   created(){
     this.getMenuList()
+    this.getPath()
   },
   methods:{
     logout(){
@@ -76,6 +79,14 @@ export default {
     },
     toggleSide(){
       this.isCollapse = !this.isCollapse;
+    },
+    savePath(e){
+      window.sessionStorage.setItem('childPath',e)
+      this.childPath = e
+    },
+    getPath(){
+      const childPath = window.sessionStorage.getItem('childPath')
+      this.childPath = childPath
     }
   },
   
@@ -104,13 +115,6 @@ export default {
     color: #333;
     text-align: center;
     line-height: 200px;
-  }
-  
-  .el-main {
-    background-color: #eaedf1;
-    color: #333;
-    text-align: center;
-    line-height: 160px;
   }
   
   .home-container{
