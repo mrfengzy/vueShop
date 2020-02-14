@@ -21,7 +21,7 @@
           <el-tag type="success" size="mini" v-else-if="scope.row.cat_level === 1">二级</el-tag>
           <el-tag type="warning" size="mini" v-else>三级</el-tag>
         </template>
-        <template v-slot:act="scope">
+        <template >
           <el-button size="mini" type="primary" icon="el-icon-edit"></el-button>
           <el-button size="mini" type="danger" icon="el-icon-delete"></el-button>
         </template>
