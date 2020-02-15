@@ -42,6 +42,23 @@
       stripe>
       <el-table-column
         type="expand">
+        <template slot-scope="scope">
+          <el-tag v-for="(item,index) in scope.row.attr_vals" :key="index" closable="" @close="handleClose(index,scope.row)">{{item}}</el-tag>
+          <!-- 循环渲染tag -->
+
+          <el-input
+            class="input-new-tag"
+            v-if="scope.row.inputVisible"
+            v-model="scope.row.inputValue"
+            ref="saveTagInput"
+            size="small"
+            @keyup.enter.native="handleInputConfirm(scope.row)"
+            @blur="handleInputConfirm(scope.row)"
+          >
+          </el-input>
+          <el-button v-else class="button-new-tag" size="small" @click="showInput(scope.row)">+ New Tag</el-button>
+
+        </template>
       </el-table-column>
       <el-table-column
         label="#"
@@ -68,6 +85,23 @@
       stripe>
       <el-table-column
         type="expand">
+        <template slot-scope="scope">
+          <el-tag v-for="(item,index) in scope.row.attr_vals" :key="index" closable="" @close="handleClose(index,scope.row)">{{item}}</el-tag>
+          <!-- 循环渲染tag -->
+
+          <el-input
+            class="input-new-tag"
+            v-if="scope.row.inputVisible"
+            v-model="scope.row.inputValue"
+            ref="saveTagInput"
+            size="small"
+            @keyup.enter.native="handleInputConfirm(scope.row)"
+            @blur="handleInputConfirm(scope.row)"
+          >
+          </el-input>
+          <el-button v-else class="button-new-tag" size="small" @click="showInput(scope.row)">+ New Tag</el-button>
+
+        </template>
       </el-table-column>
       <el-table-column
         type="index"
@@ -165,13 +199,27 @@ export default {
     },
     async getTabData(){
       if(this.checkedCacader.length !== 3){
-        return this.checkedCacader = []
+        this.checkedCacader = []
+        this.manyDataSource = []
+        this.onlyDataSource = []
+        return
       }
       //根据所选分类id和当前tab获取对应数据
       const {data:res}= await this.$http.get(`categories/${this.cateId}/attributes`,{params:{sel:this.activeName}})
       if(res.meta.status !==200){
         return this.$message.error('获取面板数据失败')
       }
+      res.data.forEach(item =>{
+        
+        item.attr_vals = item.attr_vals ? item.attr_vals.split(' ')
+        :
+        []
+        //添加布尔值 控制文本框显示隐藏
+        item.inputVisible = false
+        //输入值
+        item.inputValue = ''
+      })
+      console.log(res.data,'res.data')
       if(this.activeName ==='many'){
         this.manyDataSource = res.data
       }else{
@@ -240,6 +288,41 @@ export default {
       this.$message.success('删除参数成功')
       this.getTabData()
 
+    },
+    handleInputConfirm(e){
+      let inputValue = e.inputValue;
+      if(inputValue.trim().length === 0){
+        e.inputVisible = false;
+        e.inputValue = '';
+      }
+      e.attr_vals.push(inputValue.trim()); 
+      e.inputVisible = false;
+      e.inputValue = '';
+      //发请求 保存
+      this.saveAttrVals(e)
+     
+       
+    },
+    async saveAttrVals(e){
+       const {data : res } = await this.$http.put(`categories/${this.cateId}/attributes/${e.attr_id}`,{attr_name:e.attr_name,attr_sel:e.attr_sel,attr_vals:e.attr_vals.join(' ')})
+      if(res.meta.status !==200){
+        return this.$message.error('修改参数失败')
+      }
+      this.$message.success('修改参数成功')
+    },
+    showInput(e){
+      e.inputVisible = true;
+      //自动获取焦点
+      //$nextTick
+      //当页面上元素被重新渲染后，回调函数才会执行
+      this.$nextTick(_ => {
+          this.$refs.saveTagInput.$refs.input.focus();
+          return _
+        });
+    },
+    handleClose(index,row){
+      row.attr_vals.splice(index,1)
+      this.saveAttrVals(row)
     }
   },
   computed:{
@@ -269,5 +352,11 @@ export default {
 <style lang="less" scoped>
 .cat_opt{
   margin:15px 0;
+}
+.el-tag{
+  margin-right: 10px;
+}
+.input-new-tag{
+  width: 120px;
 }
 </style>
