@@ -16,3 +16,15 @@ html,body,#app{
   font-size: 12px;
   margin-bottom: 15px;
 }
+.el-steps{
+  margin:15px 0;
+}
+.el-step__title{
+  font-size: 13px;
+}
+.el-checkbox{
+  margin: 0 10px 0 0;
+}
+.ql-editor{
+  min-height: 300px;
+}
